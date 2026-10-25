@@ -1,0 +1,184 @@
+{
+  "name": "RPA Runner",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rpa-runner",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4148e629-1155-4226-9c49-1da07215088d",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        192
+      ],
+      "webhookId": "5dc34669-249f-4bd0-b7ea-9187cdfba4a1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "auth-check",
+              "leftValue": "={{ $json.headers.authorization }}",
+              "rightValue": "Bearer MEU_TOKEN_SECRETO",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f2988f58-179c-4e20-9250-3c9ff7ab35ec",
+      "name": "Token Válido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "# Processa todos os itens recebidos pelo Webhook\nprocessados = []\nfor item in _items:\n    dados = item.get(\"json\", {})\n    corpo = dados.get(\"body\", {}) or {}\n    processados.append({\n        \"entrada\": corpo,\n        \"campos_recebidos\": len(corpo),\n    })\n\nreturn [{\n    \"json\": {\n        \"status\": \"success\",\n        \"total_itens\": len(processados),\n        \"dados\": processados,\n    }\n}]"
+      },
+      "id": "f01c35c9-f5cf-496d-80d4-f814157a7009",
+      "name": "Processar Automação (Python)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        96
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "6da2711c-5975-4ead-8635-1892fad490cd",
+      "name": "Responder Sucesso 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        896,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"error\", message: $json.error || \"Erro ao executar o código Python\" }) }}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "77f81c52-8b53-4719-9ea6-11a4efa07eb6",
+      "name": "Responder Erro 500",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        896,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"error\": \"Unauthorized\" }",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "db4e6024-04a7-4b46-9c7c-5fde6baa9a8d",
+      "name": "Responder 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        288
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Token Válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Token Válido?": {
+      "main": [
+        [
+          {
+            "node": "Processar Automação (Python)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder 401",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Automação (Python)": {
+      "main": [
+        [
+          {
+            "node": "Responder Sucesso 200",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder Erro 500",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "13955934-5cde-45c0-ad55-7dc7d2ea45e9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c3cf8b9120435dde3aa627423b63422ff0b283d3ea6a33e73b2d98b5883076ce"
+  },
+  "nodeGroups": [],
+  "id": "0K5R2HQHM5QBonlE",
+  "tags": []
+}
