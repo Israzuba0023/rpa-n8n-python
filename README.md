@@ -189,6 +189,6 @@ curl -X POST https://israzuba0723.app.n8n.cloud/webhook/rpa-runner \
 
 ## 👨‍💻 Autor
 
-Desenvolvido por **Israel Cristo Manuel Cassute (Israzuba0023)** como solução ao Desafio de Projeto da **Digital Innovation One (DIO)**.
+Desenvolvido por **Israel Cassute (Israzuba0023)** como solução ao Desafio de Projeto da **Digital Innovation One (DIO)**.
 
 * **GitHub:** [@Israzuba0023](https://github.com/Israzuba0023)
